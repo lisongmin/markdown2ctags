@@ -6,6 +6,7 @@
 # This software is licensed as described in the file LICENSE.txt, which
 # you should have received as part of this distribution.
 
+from __future__ import absolute_import, division, print_function
 import sys
 import re
 
@@ -53,11 +54,11 @@ class Tag(object):
 
     def __str__(self):
         return '%s\t%s\t%s;"\t%s' % (
-                self.tagName, self.tagFile, self.tagAddress,
-                self._formatFields())
+            self.tagName, self.tagFile, self.tagAddress,
+            self._formatFields())
 
-    def __cmp__(self, other):
-        return cmp(str(self), str(other))
+    def __lt__(self, other):
+        return str(self) < str(other)
 
     @staticmethod
     def section(section):
@@ -96,6 +97,7 @@ class Section(object):
 atxHeadingRe = re.compile(r'^(#+)\s+(.*?)(?:\s+#+)?\s*$')
 settextHeadingRe = re.compile(r'^[-=]+$')
 settextSubjectRe = re.compile(r'^[^\s]+.*$')
+
 
 def findSections(filename, lines):
     sections = []
@@ -147,7 +149,7 @@ def findSections(filename, lines):
                 lineNumber = i
 
                 s = Section(level, name, lines[i-1], lineNumber,
-                        filename, parent)
+                            filename, parent)
                 previousSections.append(s)
                 sections.append(s)
 
@@ -184,29 +186,29 @@ def genTagsFile(output, tags, sort):
 def main():
     from optparse import OptionParser
 
-    parser = OptionParser(usage = "usage: %prog [options] file(s)",
-                          version = __version__)
+    parser = OptionParser(usage="usage: %prog [options] file(s)",
+                          version=__version__)
     parser.add_option(
-            "-f", "--file", metavar = "FILE", dest = "tagfile",
-            default = "tags",
-            help = 'Write tags into FILE (default: "tags").  Use "-" to write '
-                   'tags to stdout.')
+        "-f", "--file", metavar="FILE", dest="tagfile",
+        default="tags",
+        help='Write tags into FILE (default: "tags").  Use "-" to write '
+        'tags to stdout.')
     parser.add_option(
-            "", "--sort", metavar="[yes|foldcase|no]", dest = "sort",
-            choices = ["yes", "no", "foldcase"],
-            default = "yes",
-            help = 'Produce sorted output.  Acceptable values are "yes", '
-                   '"no", and "foldcase".  Default is "yes".')
+        "--sort", metavar="[yes|foldcase|no]", dest="sort",
+        choices=["yes", "no", "foldcase"],
+        default="yes",
+        help='Produce sorted output.  Acceptable values are "yes", '
+        '"no", and "foldcase".  Default is "yes".')
 
     options, args = parser.parse_args()
 
     if options.tagfile == '-':
         output = sys.stdout
     else:
-        output = open(options.tagfile, 'wb')
+        output = open(options.tagfile, 'w')
 
     for filename in args:
-        f = open(filename, 'rb')
+        f = open(filename, 'r')
         lines = f.read().splitlines()
         f.close()
         sections = findSections(filename, lines)
@@ -226,5 +228,5 @@ if __name__ == '__main__':
             sys.exit(141)
         raise
     except ScriptError as e:
-        print >>sys.stderr, "ERROR: %s" % str(e)
+        print("ERROR: {0}".format(str(e)), file=sys.stderr)
         sys.exit(1)
