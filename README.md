@@ -11,7 +11,7 @@ The motivation was to have a tool fast enough to use with the
 ### Manage by Vundle
 To use this tool with TagBar, add the following into your `~/.vimrc`:
 ```
-Plugin 'lisongmin/markdown2ctags.git'
+Plugin 'jszakmeister/markdown2ctags.git'
 ```
 And then execute `:so %` and `:PluginInstall`
 
