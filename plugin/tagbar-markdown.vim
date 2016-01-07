@@ -12,7 +12,7 @@ endif
 " Add support for markdown files in tagbar.
 let g:tagbar_type_markdown = {
             \ 'ctagstype': 'markdown',
-            \ 'ctagsbin' : g:markdown2ctagsk,
+            \ 'ctagsbin' : g:markdown2ctags,
             \ 'ctagsargs' : '-f - --sort=yes',
             \ 'kinds' : [
             \ 's:sections',
@@ -27,7 +27,7 @@ let g:tagbar_type_markdown = {
 
 let g:tagbar_type_mkd = {
             \ 'ctagstype': 'markdown',
-            \ 'ctagsbin' : g:markdown2ctagsk,
+            \ 'ctagsbin' : g:markdown2ctags,
             \ 'ctagsargs' : '-f - --sort=yes',
             \ 'kinds' : [
             \ 's:sections',
@@ -42,7 +42,7 @@ let g:tagbar_type_mkd = {
 
 let g:tagbar_type_vimwiki = {
             \ 'ctagstype': 'markdown',
-            \ 'ctagsbin' : g:markdown2ctagsk,
+            \ 'ctagsbin' : g:markdown2ctags,
             \ 'ctagsargs' : '-f - --sort=yes',
             \ 'kinds' : [
             \ 's:sections',
