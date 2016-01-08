@@ -1,18 +1,18 @@
 
-if exists("tagbar_markdown")
+if exists("tagbar_markdown_markdown2ctags_loaded")
     finish
 endif
-let tagbar_markdown = 1
+let tagbar_markdown_markdown2ctags_loaded = 1
 
 
-if (!exists('g:markdown2ctags'))
-    let g:markdown2ctags = '~/.vim/bundle/markdown2ctags/markdown2ctags.py'
+if (!exists('g:tagbar_markdown_markdown2ctags'))
+    let g:tagbar_markdown_markdown2ctags = '~/.vim/bundle/markdown2ctags/markdown2ctags.py'
 endif
 
 " Add support for markdown files in tagbar.
-let g:tagbar_type_markdown = {
+let s:tagbar_type_markdown = {
             \ 'ctagstype': 'markdown',
-            \ 'ctagsbin' : g:markdown2ctags,
+            \ 'ctagsbin' : g:tagbar_markdown_markdown2ctags,
             \ 'ctagsargs' : '-f - --sort=yes',
             \ 'kinds' : [
             \ 's:sections',
@@ -25,33 +25,14 @@ let g:tagbar_type_markdown = {
             \ 'sort': 0,
             \ }
 
-let g:tagbar_type_mkd = {
-            \ 'ctagstype': 'markdown',
-            \ 'ctagsbin' : g:markdown2ctags,
-            \ 'ctagsargs' : '-f - --sort=yes',
-            \ 'kinds' : [
-            \ 's:sections',
-            \ 'i:images'
-            \ ],
-            \ 'sro' : '|',
-            \ 'kind2scope' : {
-            \ 's' : 'section',
-            \ },
-            \ 'sort': 0,
-            \ }
+if (!exists('g:tagbar_type_markdown'))
+    let g:tagbar_type_markdown = copy(s:tagbar_type_markdown)
+endif
 
-let g:tagbar_type_vimwiki = {
-            \ 'ctagstype': 'markdown',
-            \ 'ctagsbin' : g:markdown2ctags,
-            \ 'ctagsargs' : '-f - --sort=yes',
-            \ 'kinds' : [
-            \ 's:sections',
-            \ 'i:images'
-            \ ],
-            \ 'sro' : '|',
-            \ 'kind2scope' : {
-            \ 's' : 'section',
-            \ },
-            \ 'sort': 0,
-            \ }
+if (!exists('g:tagbar_type_mkd'))
+    let g:tagbar_type_mkd = copy(s:tagbar_type_markdown)
+endif
 
+if (!exists('g:tagbar_type_vimwiki'))
+    let g:tagbar_type_vimwiki = copy(s:tagbar_type_markdown)
+endif
