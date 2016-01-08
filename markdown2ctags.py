@@ -19,14 +19,14 @@ class ScriptError(Exception):
 
 
 def ctagNameEscape(str):
-    return re.sub('[\t\r\n]+', ' ', str)
+    return re.sub(b'[\t\r\n]+', b' ', str)
 
 
 def ctagSearchEscape(str):
-    str = str.replace('\t', r'\t')
-    str = str.replace('\r', r'\r')
-    str = str.replace('\n', r'\n')
-    str = str.replace('\\', r'\\')
+    str = str.replace(b'\t', br'\t')
+    str = str.replace(b'\r', br'\r')
+    str = str.replace(b'\n', br'\n')
+    str = str.replace(b'\\', br'\\')
     return str
 
 
@@ -38,35 +38,46 @@ class Tag(object):
         self.fields = []
 
     def addField(self, type, value=None):
-        if type == 'kind':
+        if type == b'kind':
             type = None
-        self.fields.append((type, value or ""))
+        self.fields.append((type, value))
 
     def _formatFields(self):
         formattedFields = []
         for name, value in self.fields:
+            if isinstance(value, int):
+                value = str(value).encode()
+            elif not value:
+                value = b''
+
             if name:
-                s = '%s:%s' % (name, value or "")
+                s = b':'.join([name, value])
             else:
-                s = str(value)
+                s = value
+
             formattedFields.append(s)
-        return '\t'.join(formattedFields)
+        return b'\t'.join(formattedFields)
 
     def __str__(self):
         return '%s\t%s\t%s;"\t%s' % (
             self.tagName, self.tagFile, self.tagAddress,
             self._formatFields())
 
+    def __bytes__(self):
+        return b'\t'.join([
+            self.tagName, self.tagFile, self.tagAddress + b';"',
+            self._formatFields()])
+
     def __lt__(self, other):
-        return str(self) < str(other)
+        return bytes(self) < bytes(other)
 
     @staticmethod
     def section(section):
         tagName = ctagNameEscape(section.name)
-        tagAddress = '/^%s$/' % ctagSearchEscape(section.line)
+        tagAddress = b'/^' + ctagSearchEscape(section.line) + b'$/'
         t = Tag(tagName, section.filename, tagAddress)
-        t.addField('kind', 's')
-        t.addField('line', section.lineNumber)
+        t.addField(b'kind', b's')
+        t.addField(b'line', section.lineNumber)
 
         parents = []
         p = section.parent
@@ -76,7 +87,7 @@ class Tag(object):
         parents.reverse()
 
         if parents:
-            t.addField('section', '|'.join(parents))
+            t.addField(b'section', b'|'.join(parents))
 
         return t
 
@@ -94,9 +105,9 @@ class Section(object):
         return '<Section %s %d %d>' % (self.name, self.level, self.lineNumber)
 
 
-atxHeadingRe = re.compile(r'^(#+)\s+(.*?)(?:\s+#+)?\s*$')
-settextHeadingRe = re.compile(r'^[-=]+$')
-settextSubjectRe = re.compile(r'^[^\s]+.*$')
+atxHeadingRe = re.compile(br'^(#+)\s+(.*?)(?:\s+#+)?\s*$')
+settextHeadingRe = re.compile(br'^[-=]+$')
+settextSubjectRe = re.compile(br'^[^\s]+.*$')
 
 
 def findSections(filename, lines):
@@ -106,7 +117,7 @@ def findSections(filename, lines):
 
     for i, line in enumerate(lines):
         # Skip GitHub Markdown style code blocks.
-        if line.startswith("```"):
+        if line.startswith(b"```"):
             inCodeBlock = not inCodeBlock
             continue
 
@@ -168,19 +179,19 @@ def sectionsToTags(sections):
 def genTagsFile(output, tags, sort):
     if sort == "yes":
         tags = sorted(tags)
-        sortedLine = '!_TAG_FILE_SORTED\t1\n'
+        sortedLine = b'!_TAG_FILE_SORTED\t1\n'
     elif sort == "foldcase":
         tags = sorted(tags, key=lambda x: str(x).lower())
-        sortedLine = '!_TAG_FILE_SORTED\t2\n'
+        sortedLine = b'!_TAG_FILE_SORTED\t2\n'
     else:
-        sortedLine = '!_TAG_FILE_SORTED\t0\n'
+        sortedLine = b'!_TAG_FILE_SORTED\t0\n'
 
-    output.write('!_TAG_FILE_FORMAT\t2\n')
+    output.write(b'!_TAG_FILE_FORMAT\t2\n')
     output.write(sortedLine)
 
     for t in tags:
-        output.write(str(t))
-        output.write('\n')
+        output.write(bytes(t))
+        output.write(b'\n')
 
 
 def main():
@@ -203,15 +214,18 @@ def main():
     options, args = parser.parse_args()
 
     if options.tagfile == '-':
-        output = sys.stdout
+        try:
+            output = sys.stdout.buffer
+        except:
+            output = sys.stdout
     else:
-        output = open(options.tagfile, 'w')
+        output = open(options.tagfile, 'wb')
 
     for filename in args:
-        f = open(filename, 'r')
+        f = open(filename, 'rb')
         lines = f.read().splitlines()
         f.close()
-        sections = findSections(filename, lines)
+        sections = findSections(filename.encode(sys.getfilesystemencoding()), lines)
 
         genTagsFile(output, sectionsToTags(sections), sort=options.sort)
 
