@@ -6,7 +6,8 @@ let tagbar_markdown_markdown2ctags_loaded = 1
 
 
 if (!exists('g:tagbar_markdown_markdown2ctags'))
-    let g:tagbar_markdown_markdown2ctags = '~/.vim/bundle/markdown2ctags/markdown2ctags.py'
+    let s:path = fnamemodify(resolve(expand('<sfile>:p')), ':h')
+    let g:tagbar_markdown_markdown2ctags = s:path . '/../markdown2ctags.py'
 endif
 
 " Add support for markdown files in tagbar.
